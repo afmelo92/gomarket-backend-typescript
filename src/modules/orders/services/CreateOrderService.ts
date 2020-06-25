@@ -48,8 +48,8 @@ class CreateOrderService {
     }
 
     const order = await this.ordersRepository.create({
-      customer: checkProductExists,
-      products,
+      customer: checkCustomerExists,
+      products: [checkProductExists],
     });
 
     return order;
