@@ -46,15 +46,7 @@ class CreateOrderService {
       );
     }
 
-    console.log(`CHECK PRODUCTS: ${JSON.stringify(checkProductsExists)}`);
-
-    const checkCustomerExists = await this.customersRepository.findById(
-      customer_id,
-    );
-
-    if (!checkCustomerExists) {
-      throw new AppError('Customer does not exists');
-    }
+    await this.productsRepository.updateQuantity(products);
 
     const finalProducts = checkProductsExists.map(product => {
       const requestProduct = products.find(p => p.id === product.id);
@@ -64,6 +56,13 @@ class CreateOrderService {
         quantity: requestProduct?.quantity || 0,
       };
     });
+    const checkCustomerExists = await this.customersRepository.findById(
+      customer_id,
+    );
+
+    if (!checkCustomerExists) {
+      throw new AppError('Customer does not exists');
+    }
 
     const order = await this.ordersRepository.create({
       customer: checkCustomerExists,
