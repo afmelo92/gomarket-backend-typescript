@@ -17,14 +17,14 @@ class Product {
   @Column()
   name: string;
 
-  @Column('decimal', { precision: 5, scale: 2 })
+  @Column({ type: 'numeric', precision: 10, scale: 2 })
   price: number;
 
-  @Column()
+  @Column('integer')
   quantity: number;
 
-  // @OneToMany(() => OrdersProducts, order => order.id)
-  // order_products: OrdersProducts[];
+  @OneToMany(() => OrdersProducts, OrdersProducts => OrdersProducts.product)
+  order_products: OrdersProducts[];
 
   @CreateDateColumn()
   created_at: Date;

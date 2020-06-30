@@ -1,10 +1,15 @@
-import { MigrationInterface, QueryRunner, Table } from 'typeorm';
+import {
+  MigrationInterface,
+  QueryRunner,
+  Table,
+  TableForeignKey,
+} from 'typeorm';
 
-export default class CreateProducts1593058048138 implements MigrationInterface {
+export default class CreateOrders1593205986543 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
-        name: 'products',
+        name: 'orders',
         columns: [
           {
             name: 'id',
@@ -14,23 +19,9 @@ export default class CreateProducts1593058048138 implements MigrationInterface {
             default: 'uuid_generate_v4()',
           },
           {
-            name: 'name',
-            type: 'varchar',
-            isUnique: true,
-          },
-          {
-            name: 'price',
-            type: 'decimal',
-            precision: 5,
-            scale: 2,
+            name: 'customer_id',
+            type: 'uuid',
             isUnique: false,
-            isNullable: false,
-          },
-          {
-            name: 'quantity',
-            type: 'integer',
-            isUnique: false,
-            isNullable: false,
           },
           {
             name: 'created_at',
@@ -45,9 +36,23 @@ export default class CreateProducts1593058048138 implements MigrationInterface {
         ],
       }),
     );
+
+    await queryRunner.createForeignKey(
+      'orders',
+      new TableForeignKey({
+        name: 'OrderCustomer',
+        columnNames: ['customer_id'],
+        referencedColumnNames: ['id'],
+        referencedTableName: 'customers',
+        onDelete: 'SET NULL',
+        onUpdate: 'CASCADE',
+      }),
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable('products');
+    await queryRunner.dropForeignKey('orders', 'OrderCustomer');
+
+    await queryRunner.dropTable('orders');
   }
 }

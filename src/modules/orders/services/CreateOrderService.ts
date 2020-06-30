@@ -31,13 +31,22 @@ class CreateOrderService {
   ) {}
 
   public async execute({ customer_id, products }: IRequest): Promise<Order> {
-    const checkProductExists = await this.productsRepository.findAllById(
+    const checkProductsExists = await this.productsRepository.findAllById(
       products,
     );
 
-    if (!checkProductExists) {
-      throw new AppError('Product does not exists');
+    const invalidProducts = products
+      .map(product => checkProductsExists.find(p => p.id === product.id))
+      .filter(prod => !prod);
+
+    if (invalidProducts.length > 0) {
+      const invalidProductsIds = invalidProducts.map(ip => ip?.id);
+      throw new AppError(
+        `Cannot create order with invalid products. ${invalidProductsIds}`,
+      );
     }
+
+    console.log(`CHECK PRODUCTS: ${JSON.stringify(checkProductsExists)}`);
 
     const checkCustomerExists = await this.customersRepository.findById(
       customer_id,
@@ -47,9 +56,18 @@ class CreateOrderService {
       throw new AppError('Customer does not exists');
     }
 
+    const finalProducts = checkProductsExists.map(product => {
+      const requestProduct = products.find(p => p.id === product.id);
+      return {
+        product_id: product.id,
+        price: product.price,
+        quantity: requestProduct?.quantity || 0,
+      };
+    });
+
     const order = await this.ordersRepository.create({
       customer: checkCustomerExists,
-      products: [checkProductExists],
+      products: finalProducts,
     });
 
     return order;
